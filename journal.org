@@ -1,0 +1,11 @@
+* <2016-10-13>
+** Fait:
+   - Git
+   - Des tests avec ocaml-mindstorms
+   - Problème : ce n'est que de la commande à distance via bluetooth.
+** A faire:
+   - Contacter:
+     loic.runarvot@gmail.com
+     tratos@msn.com
+     nico.infop7@gmail.com
+   - Monter le robot
