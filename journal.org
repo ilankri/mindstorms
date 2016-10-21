@@ -1,3 +1,8 @@
+* Ven 21 oct 2016 11:29:13 CEST
+** A faire:
+   - Monter le robot
+   - Écrire un programme pour le faire avancer
+   - Phase 2 : construire de quoi faire apprendre les couleurs, puis ensuite qu'il puisse reconnaître les couleurs
 * <2016-10-13>
 ** Fait:
    - Git
