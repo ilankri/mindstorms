@@ -14,3 +14,9 @@
      tratos@msn.com
      nico.infop7@gmail.com
    - Monter le robot
+* <2016-11-17>
+** Fait:
+- robot qui marche
+** A faire:
+- phase de aprentissage + colour recognition
+- MATERIAL: papier avec couleur
