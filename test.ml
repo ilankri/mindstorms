@@ -20,6 +20,16 @@ module MotorB_dev = Device.Make_device (struct
     let multiple_connection = true
   end) (MotorB_path_finder)
 
+module Color_sensor_path_finder =
+  Path_finder.Make_absolute(struct
+			     let path = "/sys/class/lego-sensor/sensor0/"
+			   end)
+		       
+module Color_sensor_dev =
+  Device.Make_device (struct
+		       let name= "color-sensor" let multiple_connection=true
+		     end) (Color_sensor_path_finder)
+			   
 let main () =
   let set_time_sp i =
     let filename = "time_sp" in
@@ -36,7 +46,7 @@ let main () =
   in
   MotorA_dev.connect ();
   MotorB_dev.connect ();
-  set_time_sp 5000;
+  set_time_sp 10000;
   set_duty_cycle_sp 20;
   set_command "run-timed";
   MotorA_dev.disconnect ();
