@@ -29,7 +29,7 @@ module Color_sensor_dev =
   Device.Make_device (struct
 		       let name= "color-sensor" let multiple_connection=true
 		     end) (Color_sensor_path_finder)
-			   
+
 let main () =
   let set_time_sp i =
     let filename = "time_sp" in
@@ -46,11 +46,13 @@ let main () =
   in
   MotorA_dev.connect ();
   MotorB_dev.connect ();
+  Color_sensor_dev.connect();
   set_time_sp 10000;
   set_duty_cycle_sp 20;
   set_command "run-timed";
   MotorA_dev.disconnect ();
   MotorB_dev.disconnect ();
+  Color_sensor_dev.disconnect();
   exit 0
 
 let _ = main ()
