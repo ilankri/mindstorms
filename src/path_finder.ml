@@ -82,9 +82,3 @@ module Make_absolute(C : sig val path : string end) = struct
       let conditions = []
     end)
 end
-
-(*
-Local Variables:
-compile-command: "make -C .."
-End:
-*)

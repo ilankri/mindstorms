@@ -22,13 +22,13 @@ module MotorB_dev = Device.Make_device (struct
 
 module Color_sensor_path_finder =
   Path_finder.Make_absolute(struct
-			     let path = "/sys/class/lego-sensor/sensor0/"
-			   end)
-		       
+    let path = "/sys/class/lego-sensor/sensor0/"
+  end)
+
 module Color_sensor_dev =
   Device.Make_device (struct
-		       let name= "color-sensor" let multiple_connection=true
-		     end) (Color_sensor_path_finder)
+    let name= "color-sensor" let multiple_connection=true
+  end) (Color_sensor_path_finder)
 
 let main () =
   let set_time_sp i =

@@ -25,7 +25,7 @@
 (* THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                *)
 (*****************************************************************************)
 
-(** The IO module contains every usefull functions to read and write any data
+(** The IO module contains every useful functions to read and write any data
     coming from a file.
     For now, it doesn't keep in memory any channel. *)
 
@@ -56,9 +56,3 @@ val write_string : string -> string -> unit
 
 val write_int : string -> int -> unit
 (** [write_int path data] write [data] as an integer to the file at [path] *)
-
-(*
-Local Variables:
-compile-command: "make -C .."
-End:
-*)

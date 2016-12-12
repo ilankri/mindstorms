@@ -37,8 +37,6 @@ let mk_reader wrapper =
 let read_string = mk_reader (fun x -> x)
 let read_int    = mk_reader int_of_string
 
-
-
 let write where data unwrapper =
   let channel = open_out where in
   output_string channel (unwrapper data);
@@ -49,9 +47,3 @@ let mk_writer unwrapper =
 
 let write_string = mk_writer (fun x -> x)
 let write_int    = mk_writer string_of_int
-
-(*
-Local Variables:
-compile-command: "make -C .."
-End:
-*)

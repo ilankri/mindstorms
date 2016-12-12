@@ -38,7 +38,8 @@ exception Device_not_connected of string
 (** Raised by all functions which needs the device connected. *)
 
 exception Name_already_exists of string
-(** Raised when two connected device have the same name, but two different paths *)
+(** Raised when two connected device have the same name, but two
+    different paths.  *)
 
 exception Invalid_value of string
 (** Raised when a value is not valid for the device. *)
@@ -56,7 +57,7 @@ module type DEVICE_INFO = sig
   val multiple_connection : bool
   (** Check if an another connection exists with the same name; if the boolean
       is set to false, then it raise an error. *)
-  
+
 end
 (** Gives informations about the device. *)
 
@@ -65,35 +66,35 @@ module type DEVICE = sig
 
   val connect : unit -> unit
   (** [connect ()] connects the device and register it to the connected devices
-      if no error occurs. 
+      if no error occurs.
       @raise Connection_failed when the path is not available
       @raise Name_already_exists when multiple connection is not allowed, or
       when two devices with the same name have not the same path. *)
 
   val disconnect : unit -> unit
-  (** [disconnect ()] disconnect the device andremove it from the registered
-      devices. 
+  (** [disconnect ()] disconnect the device and remove it from the registered
+      devices.
       If the device is already disconnected, does nothing. *)
-  
+
   val is_connected : unit -> bool
   (** [is_connected ()] check if the device is connected. *)
 
   val fail_when_disconnected : unit -> unit
   (** [fail_when_disconnected ()] check if the device is connected, and if
       not, raise Device_not_connected. *)
-  
+
   val get_path : unit -> string
   (** [get_path ()] return the path associated to the device. *)
-  
+
   val action_read : (string -> 'a) -> string -> 'a
   (** [action_read unwrapper subfile] will read to the device path at the
-      file [subfile], returning the result using the wrapper. 
-      @raise Device_not_connected when the device is disconnceted. *)
+      file [subfile], returning the result using the wrapper.
+      @raise Device_not_connected when the device is disconnected. *)
 
   val action_write : (string -> 'a -> unit) -> 'a -> string -> unit
   (** [action_write wrapper subfile] wrap the given data to a string and writes
       it to the device path, at the file [subfile].
-      @raise Device_not_connected when the device is disconnceted. *)
+      @raise Device_not_connected when the device is disconnected. *)
 
   val action_read_int : string -> int
   (** [action_read_int filename] is a shortcut
@@ -107,7 +108,7 @@ module type DEVICE = sig
   (** [action_read_string filename] is a shortcut
       to [action_read IO.read_string filename] *)
 
-  val action_write_string : string -> string -> unit 
+  val action_write_string : string -> string -> unit
   (** [action_write_string i filename] is a shortcut to
       [action_write IO.write_string filename] *)
 end
@@ -115,9 +116,3 @@ end
 
 module Make_device (DI : DEVICE_INFO) (P : PATH_FINDER) : DEVICE
 (** Device Maker. *)
-
-(*
-Local Variables:
-compile-command: "make -C .."
-End:
-*)

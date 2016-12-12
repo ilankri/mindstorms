@@ -32,7 +32,7 @@ exception Device_not_connected of string
 exception Name_already_exists of string
 exception Invalid_value of string
 
-(* Table name -> path; usefull for multiple connection *)
+(* Table name -> path; useful for multiple connection *)
 let device_table  : (string, string) Hashtbl.t = Hashtbl.create 13
 let device_add    = Hashtbl.add device_table
 let device_remove = Hashtbl.remove device_table
@@ -50,7 +50,7 @@ module type DEVICE = sig
   val action_read_int : string -> int
   val action_write_int : int -> string -> unit
   val action_read_string : string -> string
-  val action_write_string : string -> string -> unit 
+  val action_write_string : string -> string -> unit
 end
 
 module type DEVICE_INFO = sig
@@ -62,10 +62,10 @@ module Make_device (DI : DEVICE_INFO) (P : PATH_FINDER) = struct
 
   let connected =
     ref false
-  
+
   let is_connected () =
     !connected
-  
+
   let connect () =
     if not (is_connected ()) then begin
 
@@ -77,7 +77,7 @@ module Make_device (DI : DEVICE_INFO) (P : PATH_FINDER) = struct
 
       if device_mem DI.name && not DI.multiple_connection then
         raise (Name_already_exists DI.name);
-      
+
       if device_mem DI.name then begin
         let existing_path = device_find DI.name in
         if String.compare path existing_path <> 0 then
@@ -93,7 +93,7 @@ module Make_device (DI : DEVICE_INFO) (P : PATH_FINDER) = struct
       connected := false;
       device_remove DI.name
     end
-      
+
   let get_path =
     P.get_path
 
@@ -107,7 +107,7 @@ module Make_device (DI : DEVICE_INFO) (P : PATH_FINDER) = struct
       failwith (Printf.sprintf "Invalid file %s" complete)
     else
       complete
-  
+
   let action_read reader subfile =
     fail_when_disconnected ();
     reader (get_complete_path subfile)
@@ -122,9 +122,3 @@ module Make_device (DI : DEVICE_INFO) (P : PATH_FINDER) = struct
   let action_read_string = action_read IO.read_string
   let action_write_string = action_write IO.write_string
 end
-
-(*
-Local Variables:
-compile-command: "make -C .."
-End:
-*)

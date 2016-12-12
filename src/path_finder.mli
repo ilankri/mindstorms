@@ -30,26 +30,26 @@
 (** {2 Path finder creation} *)
 
 module type PATH_FINDER = sig
-  
+
   val get_path : unit -> string
   (** [get_path ()] returns the calculated path.
       The path is calculated only once. *)
-    
+
   val is_available : unit -> bool
   (** [is_available ()] check if the path is available.contents *)
-    
+
 end
 (** The signature of every path finder implementation *)
 
 
 module type CONDITIONS = sig
-  
+
   val prefix : string
   (** [prefix] is the the prefix path where to search *)
-    
+
   val conditions : (string * string) list
   (** [conditions] is a list of (filename, expected_value). *)
-      
+
 end
 (** Conditions to search the correct path *)
 
@@ -62,9 +62,3 @@ module Make(C : CONDITIONS) : PATH_FINDER
 module Make_absolute(C : sig val path : string end) : PATH_FINDER
 (** Create an absolute path. It's the same as using Make with empty
     conditions. *)
-
-(*
-Local Variables:
-compile-command: "make -C .."
-End:
-*)
