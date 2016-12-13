@@ -8,6 +8,8 @@ srcdir = src
 builddir = _build/$(srcdir)
 
 # OCamlbuild variables
+NEXT = native
+BEXT = byte
 DEBUGFLAG = -g
 OCAMLCFLAGS = -cflags $(DEBUGFLAG),-annot,-bin-annot,-w,+a
 OCAMLLFLAGS = -lflag $(DEBUGFLAG)
@@ -17,36 +19,37 @@ EV3_IMG = ev3
 ROBOT_HOME = /home/robot
 ROBOT = robot@ev3dev.local
 
-# Target basename
-TARGET = test
-# Native target
-NTARGET = $(TARGET).native
-# Bytecode target
-BTARGET = $(TARGET).byte
+# Target basenames
+TARGETS = test
+# Native targets
+NTARGETS = $(addsuffix .$(NEXT),$(TARGETS))
+# Bytecode targets
+BTARGETS = $(addsuffix .$(BEXT),$(TARGETS))
 
 build = $(OCAMLBUILD) -no-links $(OCAMLCFLAGS) $(OCAMLLFLAGS) $(OCAMLLIBS)
 clean = $(OCAMLBUILD) -clean
+export-to-robot = $(SCP) $(addprefix $(builddir)/,$(1)) $(ROBOT):$(ROBOT_HOME)
 
 .SUFFIXES:
-.SUFFIXES: .native .byte
-.PHONY: all $(TARGET) export-native export-byte ev3 clean
+.PHONY: all $(TARGETS) $(NTARGETS) $(BTARGETS) export-native	\
+	export-byte ev3 clean
 
-all: $(TARGET)
+all: $(TARGETS)
 
 # Generate suitable executable for the robot using Docker.
-$(TARGET):
-	$(DOCKER) run --rm -v $$PWD:$(ROBOT_HOME) $(EV3_IMG) $(MAKE) $(NTARGET)
+$(TARGETS): ev3
+	$(DOCKER) run --rm -v $$PWD:$(ROBOT_HOME) $(EV3_IMG) $(MAKE) $@.$(NEXT)
 
-%.native %.byte:
+$(NTARGETS) $(BTARGETS):
 	$(build) $(srcdir)/$@
 
-# Export native executable to the robot via SSH.
-export-native: $(TARGET)
-	$(SCP) $(builddir)/$(NTARGET) $(ROBOT):$(ROBOT_HOME)
+# Export native executables to the robot via SSH.
+export-native: $(TARGETS)
+	$(call export-to-robot,$(NTARGETS))
 
-# Export bytecode executable to the robot via SSH.
-export-byte: $(BTARGET)
-	$(SCP) $(builddir)/$< $(ROBOT):$(ROBOT_HOME)
+# Export bytecode executables to the robot via SSH.
+export-byte: $(BTARGETS)
+	$(call export-to-robot,$^)
 
 # Generate Docker image to compile OCaml code for the robot.
 ev3:
