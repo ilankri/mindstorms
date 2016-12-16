@@ -20,7 +20,7 @@ ROBOT_HOME = /home/robot
 ROBOT = robot@ev3dev.local
 
 # Target basenames
-TARGETS = test color_calibration
+TARGETS = test color_recognition
 # Native targets
 NTARGETS = $(addsuffix .$(NEXT),$(TARGETS))
 # Bytecode targets
