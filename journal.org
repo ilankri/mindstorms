@@ -1,3 +1,9 @@
+* Ven 16 déc 2016 09:58:34 CET
+** Fait:
+   - Reconnaissance des couleurs de base (en dur)
+** A faire:
+   - Faire une phase d'apprentissage des couleurs qui construit un nuage de points de mesures.
+   - Faire une phase de reconnaissance qui permet de déteriner si la mesure est dans un nuage ou non, et duquel elle est le plus proche.
 * Ven 21 oct 2016 11:29:13 CEST
 ** A faire:
    - Monter le robot
