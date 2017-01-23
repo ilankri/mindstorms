@@ -5,7 +5,8 @@ DOCKER = docker
 SCP = scp
 
 srcdir = src
-builddir = _build/$(srcdir)
+testdir = test
+builddir = _build
 
 # OCamlbuild variables
 NEXT = native
@@ -20,7 +21,8 @@ ROBOT_HOME = /home/robot
 ROBOT = robot@ev3dev.local
 
 # Target basenames
-TARGETS = test color_recognition
+TARGETS = $(addprefix $(srcdir)/, color_recognition)	\
+		$(addprefix $(testdir)/, motor_test legoEv3Button_test)
 # Native targets
 NTARGETS = $(addsuffix .$(NEXT),$(TARGETS))
 # Bytecode targets
@@ -41,7 +43,7 @@ $(TARGETS): ev3
 	$(DOCKER) run --rm -v $$PWD:$(ROBOT_HOME) $(EV3_IMG) $(MAKE) $@.$(NEXT)
 
 $(NTARGETS) $(BTARGETS):
-	$(build) $(srcdir)/$@
+	$(build) $@
 
 # Export native executables to the robot via SSH.
 export-native: $(TARGETS)
