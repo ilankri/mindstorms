@@ -34,7 +34,7 @@ export-to-robot = $(SCP) $(addprefix $(builddir)/,$(1)) $(ROBOT):$(ROBOT_HOME)
 
 .SUFFIXES:
 .PHONY: all $(TARGETS) $(NTARGETS) $(BTARGETS) export-native	\
-	export-byte ev3 clean
+	export-byte doc ev3 clean
 
 all: $(TARGETS)
 
@@ -52,6 +52,10 @@ export-native: $(TARGETS)
 # Export bytecode executables to the robot via SSH.
 export-byte: $(BTARGETS)
 	$(call export-to-robot,$^)
+
+# Generate documentation.
+doc:
+	$(OCAMLBUILD) ev3.docdir/index.html
 
 # Generate Docker image to compile OCaml code for the robot.
 ev3:
