@@ -1,51 +1,110 @@
-type rgb = {
-  red : int;
-  green : int;
-  blue : int;
+type t = float Triple.t
+
+(* Extract red component.  *)
+let red c = Triple.fst c
+
+(* Extract green component.  *)
+let green c = Triple.snd c
+
+(* Extract blue component.  *)
+let blue c = Triple.trd c
+
+let make (r, g, b) = Triple.(map float_of_int (make r g b))
+
+(* Same as [make] but with float RBG components.  *)
+let make_float (r, g, b) = Triple.make r g b
+
+let to_string c =
+  let c = Triple.map int_of_float c in
+  Printf.sprintf "color(%d, %d, %d)" (red c) (green c) (blue c)
+
+(* Scalar product in three-dimensional space.  *)
+let scalar_prod c c' =
+  red c *. red c' +. green c *. green c' +. blue c *. blue c'
+
+(* Norm in three-dimensional space.  *)
+let norm c = sqrt (scalar_prod c c)
+
+(* Per-component addition.  *)
+let add c c' = Triple.map2 (+.) c c'
+
+(* Per-component subtraction.   *)
+let diff c c' = Triple.map2 (-.) c c'
+
+(* Per-component scalar multiplication.  *)
+let shift k c = Triple.map (( *. ) k) c
+
+(* Return the distance between the two given colors seen like points in
+   the three-dimensional space.  *)
+let dist c c' = norm (diff c c')
+
+
+type color_cloud = {
+  id : int;                     (* Identifier.  *)
+  center : t;                   (* Center point.  *)
+  min : t;                      (* Minimal point.  *)
+  max : t                       (* Maximal point.  *)
 }
 
-type color =
-  | Black
-  | White
-  | Red
-  | Green
-  | Blue
-  | Yellow
+(* Convenient function to generate fresh identifiers for point
+   clouds.  *)
+let next_id =
+  let c = ref 0 in
+  fun () ->
+    c := succ !c;
+    !c
 
-let color_of_hue = function
-  | 0 -> Red
-  | 60 -> Yellow
-  | 120 -> Green
-  | 240 -> Blue
-  | _ -> assert false
+(* Return the average point of the given color list.  *)
+let average cols =
+  let black = make (0, 0, 0) in
+  let sum = List.fold_left add black cols in
+  shift (1. /. float_of_int (List.length cols)) sum
 
-let hue_of_color = function
-  | Black | White -> assert false
-  | Red -> 0
-  | Green -> 120
-  | Blue -> 240
-  | Yellow -> 60
-
-let hue_reflist =
-  List.map hue_of_color [Red; Green; Blue; Yellow]
-
-let string_of_color = function
-  | Black -> "black"
-  | White -> "white"
-  | Red -> "red"
-  | Green -> "green"
-  | Blue -> "blue"
-  | Yellow -> "yellow"
-
-let hue_of_rgb {red = r; green = g; blue = b} =
-  let hue_rad =
-    atan2 (sqrt 3. *. float_of_int (g - b)) (float_of_int ((r lsr 1) - g - b))
+let make_cloud col_cloud =
+  (* Compute the "minimal" and "maximal" points of [col_cloud].  *)
+  let min_max (min_col, max_col) col =
+    let aux min_or_max col' =
+      make_float (min_or_max (red col) (red col'),
+                  min_or_max (green col) (green col'),
+                  min_or_max (blue col) (blue col'))
+    in
+    (aux min min_col, aux max max_col)
   in
-  let hue_deg = Math.(nearest_int (degree_of_radian hue_rad)) in
-  if hue_deg < 0 then  hue_deg + 360 else hue_deg
 
-let lerp_red = Math.lerp (27, 0) (480, 255)
+  let make x = make_float (x, x, x) in
+  let min, max =
+    List.fold_left min_max (make infinity, make neg_infinity) col_cloud in
+  {
+    id = next_id ();
+    center = average col_cloud;
+    min = min;
+    max = max
+  }
 
-let lerp_green = Math.lerp (27, 0) (400, 255)
+let string_of_cloud c =
+  Printf.sprintf "color_cloud(id = %d, center = %s, min = %s, max = %s)"
+    c.id (to_string c.center) (to_string c.min) (to_string c.max)
 
-let lerp_blue = Math.lerp (17, 0) (250, 255)
+let id c = c.id
+
+let center c = c.center
+
+(* Template function for comparison functions.  *)
+let cmp cmp_func col col' =
+  let aux select_component =
+    cmp_func (select_component col) (select_component col')
+  in
+  aux red && aux green && aux blue
+
+(* Test if [col <= col'], i.e. :
+
+   [red col <= red col'] and [green col <= green col'] and [blue col <=
+   blue col'].  *)
+let leq col col' = cmp (<=) col col'
+
+(* Test if [col >= col'].  *)
+let geq col col' = cmp (>=) col col'
+
+let member col col_cloud =
+  let epsilon = make (2, 2, 2) in
+  geq col (diff col_cloud.min epsilon) && leq col (add col_cloud.max epsilon)
