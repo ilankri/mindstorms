@@ -14,7 +14,7 @@ BEXT = byte
 DEBUGFLAG = -g
 OCAMLCFLAGS = -cflags $(DEBUGFLAG),-annot,-bin-annot,-w,+a
 OCAMLLFLAGS = -lflag $(DEBUGFLAG)
-OCAMLLIBS = -lib unix
+OCAMLLIBS = # -lib unix
 
 EV3_IMG = ev3
 ROBOT_HOME = /home/robot
@@ -33,20 +33,15 @@ clean = $(OCAMLBUILD) -clean
 export-to-robot = $(SCP) $(addprefix $(builddir)/,$(1)) $(ROBOT):$(ROBOT_HOME)
 
 .SUFFIXES:
-.PHONY: all $(TARGETS) $(NTARGETS) $(BTARGETS) export-native	\
+.PHONY: all $(NTARGETS) $(BTARGETS) export-native	\
 	export-byte doc ev3 clean
 
-all: $(TARGETS)
-
 # Generate suitable executable for the robot using Docker.
-$(TARGETS): ev3
-	$(DOCKER) run --rm -v $$PWD:$(ROBOT_HOME) $(EV3_IMG) $(MAKE) $@.$(NEXT)
-
-$(NTARGETS) $(BTARGETS):
-	$(build) $@
+all: ev3
+	$(DOCKER) run --rm -v $$PWD:$(ROBOT_HOME) $(EV3_IMG) $(MAKE) $(NTARGETS)
 
 # Export native executables to the robot via SSH.
-export-native: $(TARGETS)
+export-native: all
 	$(call export-to-robot,$(NTARGETS))
 
 # Export bytecode executables to the robot via SSH.
@@ -61,5 +56,10 @@ doc:
 ev3:
 	$(DOCKER) build -t $(EV3_IMG) .
 
+# Generic rule.
+$(NTARGETS) $(BTARGETS):
+	$(build) $@
+
+# Cleaning rule.
 clean:
 	$(clean)
