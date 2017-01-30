@@ -46,8 +46,6 @@ let main () =
     List.iter
       (fun c -> output_string ch (Color.string_of_cloud c ^ "\n")) known_cols;
     close_out ch;
-    print_endline "Learning stage done.\n";
-    print_endline "Ready to recognize colors.\n";
     known_cols
   in
   let recognize_loop known_cols () =
@@ -55,9 +53,18 @@ let main () =
     | None -> print_endline "Unknown color."
     | Some c -> Printf.printf "Color %d recognized.\n%!" (Color.id c);
   in
-  let learn_then_recognize () = recognize_loop (learn_loop ()) in
-  print_endline "Ready to learn colors.\n";
-  ignore LegoEv3Button.(repeat_until learn_then_recognize Backspace);
+
+  (* First, we learn the colors to the robot.  *)
+  let known_cols =
+    print_endline "Ready to learn colors.";
+    learn_loop ()
+  in
+  print_endline "Learning stage done.";
+
+  (* Then, the robot is able to recognize input color.  *)
+  print_endline "Ready to recognize colors.";
+  ignore LegoEv3Button.(repeat_until (recognize_loop known_cols) Backspace);
+
   Color_sensor.disconnect ();
   exit 0
 
