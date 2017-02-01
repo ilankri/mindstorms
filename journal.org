@@ -1,3 +1,8 @@
+* <2017-02-01>
+** Fait:
+   - Etalonnage min-max
+** A faire:
+   - Etalonnage Gaussienne
 * Ven 16 déc 2016 09:58:34 CET
 ** Fait:
    - Reconnaissance des couleurs de base (en dur)
