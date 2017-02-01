@@ -18,7 +18,7 @@ OCAMLLIBS = # -lib unix
 
 EV3_IMG = ev3
 ROBOT_HOME = /home/robot
-ROBOT = robot@ev3dev.local
+ROBOT = robot@169.254.156.21
 
 # Target basenames
 TARGETS = $(addprefix $(srcdir)/, color_recognition)	\

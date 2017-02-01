@@ -60,6 +60,16 @@ let average cols =
   let sum = List.fold_left add black cols in
   shift (1. /. float_of_int (List.length cols)) sum
 
+(* Return the standard deviation of the given color list *)
+let standard_deviation cols =
+  let avg = average cols
+  and black = make (0, 0, 0) in
+  let squared_diff y x = let diff_x_y = (diff x y) in scalar_prod (diff_x_y) (diff_x_y)
+  in let sum_squared_diff_list = List.map (squared_diff avg) cols
+     in let sum = List.fold_left add black cols
+	in shift (1. /. float_of_int (List.length cols)) sum
+					  
+	     
 let make_cloud col_cloud =
   (* Compute the "minimal" and "maximal" points of [col_cloud].  *)
   let min_max (min_col, max_col) col =
