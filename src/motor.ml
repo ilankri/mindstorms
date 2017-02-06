@@ -49,12 +49,14 @@ module type AbstractMotor = sig
 
   type polarity = Normal | Inversed
 
+  type state = Running | Ramping
+
   val send_command : commands -> unit
   val driver_name : unit -> string
   val port_name : unit -> string
   val polarity : unit -> polarity
   val set_polarity : polarity -> unit
-  val state : unit -> [ `Running | `Ramping ]
+  val state : unit -> state
 end
 
 module Make_abstract_motor
@@ -94,8 +96,8 @@ struct
 
   let state () =
     match action_read_string "state" with
-    | "running" -> `Running
-    | "ramping" -> `Ramping
+    | "running" -> Running
+    | "ramping" -> Ramping
     | _ -> assert false
 
   let port_name () =
@@ -199,10 +201,12 @@ end
 (* TM & DC COMMON *)
 
 module type DC_AND_TM_COMMON = sig
+  type stop_action = Coast | Brake
+
   val duty_cycle : unit -> int
   val duty_cycle_sp : unit -> int
   val set_duty_cycle_sp : int -> unit
-  val stop : [ `Coast | `Brake ] -> unit
+  val stop : stop_action -> unit
   val ramp_down_sp : unit -> int
   val set_ramp_down_sp : ?valid:(int -> bool) -> int -> unit
   val ramp_up_sp : unit -> int
@@ -225,8 +229,8 @@ module DcAndTmCommons (D : DEVICE) (DI : DEVICE_INFO) = struct
 
   let stop s =
     let action = match s with
-      | `Coast -> "coast"
-      | `Brake -> "brake"
+      | Coast -> "coast"
+      | Brake -> "brake"
     in
     D.action_write_string action "stop"
 
@@ -267,15 +271,20 @@ module type TM_MOTOR_TYPE = sig
     | Stop
     | Reset
 
+  type tm_state =
+    | Running
+    | Ramping
+    | Holding
+    | Stalled
+
   include AbstractMotor
     with type commands := tm_commands
 
   include DC_AND_TM_COMMON
 
-  val state : unit -> [ `Running | `Ramping | `Holding | `Stalled ]
+  val state : unit -> tm_state
   val set_ramp_down_sp : int -> unit
   val set_ramp_up_sp : int -> unit
-
   val count_per_rot : unit -> int
   val encoder_polarity : unit -> polarity
   val set_encoder_polarity : polarity -> unit
@@ -357,10 +366,10 @@ module TachoMotor (DI : DEVICE_INFO) (M : MOTOR_INFOS) = struct
 
   let state () =
     match action_read_string "state" with
-    | "running" -> `Running
-    | "ramping" -> `Ramping
-    | "holding" -> `Holding
-    | "stalled" -> `Stalled
+    | "running" -> Running
+    | "ramping" -> Ramping
+    | "holding" -> Holding
+    | "stalled" -> Stalled
     | _ -> assert false
 
   let set_ramp_up_sp = set_ramp_up_sp ~valid:(( <= ) 0)

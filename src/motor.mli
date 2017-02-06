@@ -63,6 +63,9 @@ module type AbstractMotor = sig
   type polarity = Normal | Inversed
   (** The type of polarity *)
 
+  type state = Running | Ramping
+  (** The type of state.  *)
+
   val send_command : commands -> unit
   (** [send_command cmd] send [cmd] to the motor. *)
 
@@ -78,7 +81,7 @@ module type AbstractMotor = sig
   val set_polarity : polarity -> unit
   (** [polarity p] change the polarity of the motor to [p]. *)
 
-  val state : unit -> [ `Running | `Ramping ]
+  val state : unit -> state
   (** [state ()] returns the current state of the motor. *)
 
 end
@@ -94,10 +97,12 @@ module Make_abstract_motor
 
 
 module type DC_AND_TM_COMMON = sig
+  type stop_action = Coast | Brake
+
   val duty_cycle : unit -> int
   val duty_cycle_sp : unit -> int
   val set_duty_cycle_sp : int -> unit
-  val stop : [ `Coast | `Brake ] -> unit
+  val stop : stop_action -> unit
   val ramp_down_sp : unit -> int
   val set_ramp_down_sp : ?valid:(int -> bool) -> int -> unit
   val ramp_up_sp : unit -> int
@@ -176,12 +181,22 @@ module type TM_MOTOR_TYPE = sig
     | Reset                     (** Send the command "reset" *)
   (** Command allowable for a Tacho Motor *)
 
+
+  (** Possible states for a Tacho Motor.  See {{:
+      http://www.ev3dev.org/docs/drivers/tacho-motor-class/} EV3 doc}
+      for the meaning of states.  *)
+  type tm_state =
+    | Running
+    | Ramping
+    | Holding
+    | Stalled
+
   include AbstractMotor
     with type commands := tm_commands
 
   include DC_AND_TM_COMMON
 
-  val state : unit -> [ `Running | `Ramping | `Holding | `Stalled ]
+  val state : unit -> tm_state
   (** [state ()] returns the motor's state. It contains more possible values
       than the abstract motor. *)
 
