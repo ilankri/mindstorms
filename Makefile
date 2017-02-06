@@ -1,36 +1,46 @@
 SHELL = /bin/sh
-
-OCAMLBUILD = ocamlbuild
-DOCKER = docker
 SCP = scp
 
 srcdir = src
 testdir = test
 builddir = _build
 
-# OCamlbuild variables
+# OCamlbuild variables.
+OCAMLBUILD = ocamlbuild
 NEXT = native
 BEXT = byte
 DEBUGFLAG = -g
 OCAMLCFLAGS = -cflags $(DEBUGFLAG),-annot,-bin-annot,-w,+a
 OCAMLLFLAGS = -lflag $(DEBUGFLAG)
-OCAMLLIBS = # -lib unix
+# OCAMLLIBS = -lib unix
 
+# Docker variables.
+DOCKER = docker
 EV3_IMG = ev3
-ROBOT_HOME = /home/robot
-ROBOT = robot@169.254.156.21
 
-# Target basenames
+# Robot-specific variables.
+ROBOT_HOME = /home/robot
+ROBOT_USR = robot
+
+# If there is a problem with this hostname, override this variable when
+# invoking make, e.g.: ROBOT_IP=169.254.156.21 make [target].
+ROBOT_IP = ev3dev.local
+
+# Target basenames.
 TARGETS = $(addprefix $(srcdir)/, color_recognition)	\
 		$(addprefix $(testdir)/, motor_test legoEv3Button_test)
-# Native targets
+
+# Native targets.
 NTARGETS = $(addsuffix .$(NEXT),$(TARGETS))
-# Bytecode targets
+
+# Bytecode targets.
 BTARGETS = $(addsuffix .$(BEXT),$(TARGETS))
 
+# Auxiliary functions.
 build = $(OCAMLBUILD) -no-links $(OCAMLCFLAGS) $(OCAMLLFLAGS) $(OCAMLLIBS)
 clean = $(OCAMLBUILD) -clean
-export-to-robot = $(SCP) $(addprefix $(builddir)/,$(1)) $(ROBOT):$(ROBOT_HOME)
+export-to-robot = $(SCP) $(addprefix $(builddir)/,$(1))		\
+			$(ROBOT_USR)@$(ROBOT_IP):$(ROBOT_HOME)
 
 .SUFFIXES:
 .PHONY: all $(NTARGETS) $(BTARGETS) export-native	\
