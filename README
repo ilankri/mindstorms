@@ -1,0 +1,23 @@
+* Useful links
+
+** EV3
+
+http://www.ev3dev.org/docs/tutorials/connecting-to-ev3dev-with-ssh/
+
+http://www.ev3dev.org/docs/drivers/tacho-motor-class/
+
+http://www.ev3dev.org/docs/sensors/lego-ev3-color-sensor/
+
+http://www.ev3dev.org/docs/tutorials/using-ev3-buttons/
+
+https://github.com/OCamlEV3/OCamlEV3-bindings
+
+** Docker
+
+https://www.docker.com/
+
+https://github.com/ev3dev/docker-library
+
+** OCaml
+
+https://caml.inria.fr/resources/doc/guides/guidelines.fr.html
