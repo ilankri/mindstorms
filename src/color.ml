@@ -11,9 +11,6 @@ let blue c = Triple.trd c
 
 let make (r, g, b) = Triple.(map float_of_int (make r g b))
 
-(* Same as [make] but with float RBG components.  *)
-let make_float (r, g, b) = Triple.make r g b
-
 let to_string c =
   let c = Triple.map int_of_float c in
   Printf.sprintf "color(%d, %d, %d)" (red c) (green c) (blue c)
@@ -45,8 +42,7 @@ let dist c c' = norm (diff c c')
 type color_cloud = {
   id : int;                     (* Identifier.  *)
   center : t;                   (* Center point.  *)
-  min : t;                      (* Minimal point.  *)
-  max : t                       (* Maximal point.  *)
+  sigma : t                     (* Standard deviation point.  *)
 }
 
 (* Convenient function to generate fresh identifiers for point
@@ -64,9 +60,8 @@ let average cols =
   shift (1. /. float_of_int (List.length cols)) sum
 
 (* Return the standard deviation of the given color list *)
-let standard_deviation cols =
-  let avg = average cols
-  and black = make (0, 0, 0) in
+let standard_deviation avg cols =
+  let black = make (0, 0, 0) in
   let squared_diff y x =
     let diff_x_y = diff x y in
     mult diff_x_y diff_x_y
@@ -75,30 +70,13 @@ let standard_deviation cols =
   let sum = List.fold_left add black sum_squared_diff_list in
   shift (1. /. float_of_int (List.length cols)) sum
 
-let make_cloud col_cloud =
-  (* Compute the "minimal" and "maximal" points of [col_cloud].  *)
-  let min_max (min_col, max_col) col =
-    let aux min_or_max col' =
-      make_float (min_or_max (red col) (red col'),
-                  min_or_max (green col) (green col'),
-                  min_or_max (blue col) (blue col'))
-    in
-    (aux min min_col, aux max max_col)
-  in
-
-  let make x = make_float (x, x, x) in
-  let min, max =
-    List.fold_left min_max (make infinity, make neg_infinity) col_cloud in
-  {
-    id = next_id ();
-    center = average col_cloud;
-    min = min;
-    max = max
-  }
+let make_cloud cols =
+  let avg = average cols in
+  {id = next_id (); center = avg; sigma = standard_deviation avg cols}
 
 let string_of_cloud c =
-  Printf.sprintf "color_cloud(id = %d, center = %s, min = %s, max = %s)"
-    c.id (to_string c.center) (to_string c.min) (to_string c.max)
+  Printf.sprintf "color_cloud(id = %d, center = %s, sigma = %s)"
+    c.id (to_string c.center) (to_string c.sigma)
 
 let id c = c.id
 
@@ -121,5 +99,9 @@ let leq col col' = cmp (<=) col col'
 let geq col col' = cmp (>=) col col'
 
 let member col col_cloud =
-  let epsilon = make (2, 2, 2) in
-  geq col (diff col_cloud.min epsilon) && leq col (add col_cloud.max epsilon)
+  (* We suppose that colors composing a color cloud follows a Gaussian
+     distribution.  Thus, a random color of the cloud is between
+     center - 2*sigma and center + 2*sigma with probability 95%.  *)
+  let epsilon = shift 2. col_cloud.sigma in
+  geq col (diff col_cloud.center epsilon) &&
+  leq col (add col_cloud.center epsilon)
