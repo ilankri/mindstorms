@@ -40,7 +40,6 @@ end
 
 module type MOTOR_INFOS = sig
   val output_port : output_port
-  val motor_name  : string
 end
 
 module type AbstractMotor = sig
@@ -68,6 +67,8 @@ struct
   include C
 
   type polarity = Normal | Inversed
+
+  type state = Running | Ramping
 
   let read_polarity = action_read (IO.mk_reader (function
       | "normal" -> Normal
@@ -101,7 +102,7 @@ struct
     | _ -> assert false
 
   let port_name () =
-    action_read_string "port_name"
+    action_read_string "address"
 
 end
 
@@ -148,8 +149,7 @@ module ServoMotor (DI : DEVICE_INFO) (M : MOTOR_INFOS) = struct
   module ServoMotorPathFinder = Path_finder.Make(struct
       let prefix = "/sys/class/servo-motor/"
       let conditions = [
-        ("name", M.motor_name);
-        ("port", string_of_output_port M.output_port);
+        ("address", string_of_output_port M.output_port);
       ]
     end)
 
@@ -216,6 +216,8 @@ module type DC_AND_TM_COMMON = sig
 end
 
 module DcAndTmCommons (D : DEVICE) (DI : DEVICE_INFO) = struct
+  type stop_action = Coast | Brake
+
   let duty_cycle () =
     D.action_read_int "duty_cycle"
 
@@ -324,6 +326,12 @@ module TachoMotor (DI : DEVICE_INFO) (M : MOTOR_INFOS) = struct
     | Stop
     | Reset
 
+  type tm_state =
+    | Running
+    | Ramping
+    | Holding
+    | Stalled
+
   module TMMotorCommands = struct
 
     type commands = tm_commands
@@ -342,8 +350,7 @@ module TachoMotor (DI : DEVICE_INFO) (M : MOTOR_INFOS) = struct
   module TMMotorPathFinder = Path_finder.Make(struct
       let prefix = "/sys/class/tacho-motor/"
       let conditions = [
-        ("name", M.motor_name);
-        ("port", string_of_output_port M.output_port);
+        ("address", string_of_output_port M.output_port);
       ]
     end)
 
@@ -364,7 +371,7 @@ module TachoMotor (DI : DEVICE_INFO) (M : MOTOR_INFOS) = struct
         | _ -> assert false
       ))
 
-  let state () =
+  let state () : tm_state =
     match action_read_string "state" with
     | "running" -> Running
     | "ramping" -> Ramping
@@ -504,9 +511,7 @@ module DCMotor (DI : DEVICE_INFO) (M : MOTOR_INFOS) = struct
   module DCMotorPathFinder = Path_finder.Make(struct
       let prefix = "/sys/class/dc-motor/"
       let conditions = [
-        ("name", M.motor_name);
-        ("port", string_of_output_port M.output_port
-        );
+        ("address", string_of_output_port M.output_port);
       ]
     end)
 

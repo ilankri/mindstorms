@@ -46,9 +46,6 @@ module type MOTOR_INFOS = sig
   val output_port : Port.output_port
   (** The port where to find the motor. *)
 
-  val motor_name  : string
-  (** The motor name which can be find in the file 'name' *)
-
 end
 (** The module containing information to find the folder associated to the
     motor *)
