@@ -103,6 +103,6 @@ let member col col_cloud =
   (* We suppose that colors composing a color cloud follows a Gaussian
      distribution.  Thus, a random color of the cloud is between
      center - 3*sigma and center + 3*sigma with probability 99.7%.  *)
-  let epsilon = shift 3. col_cloud.sigma in
-  geq col (diff col_cloud.center epsilon) &&
-  leq col (add col_cloud.center epsilon)
+  let delta = shift 3. col_cloud.sigma in
+  geq col (diff col_cloud.center delta) &&
+  leq col (add col_cloud.center delta)
