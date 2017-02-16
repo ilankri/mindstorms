@@ -1,0 +1,3 @@
+This directory will contain all algorithms which will be used to follow lines
+
+Algorithms are classed by increasing order of hardness.

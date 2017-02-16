@@ -1,0 +1,6 @@
+[Algorithm 2]
+
+Prerequisite : the color line is right, continued, and can cross lines with different colors
+
+- Note the color of the line before starting to run
+- Run, and simultaneously check the color : stop running if the color becomes white.
