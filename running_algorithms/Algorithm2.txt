@@ -1,6 +1,11 @@
 [Algorithm 2]
 
-Prerequisite : the color line is right, continued, and can cross lines with different colors
+Prerequisite :
+--------------
+The color line is right, continued, and can cross lines with different colors
+The robot is set properly
 
+Steps :
+-------
 - Note the color of the line before starting to run
 - Run, and simultaneously check the color : stop running if the color becomes white.
