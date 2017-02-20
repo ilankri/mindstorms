@@ -9,11 +9,11 @@ let green c = Triple.snd c
 (* Extract blue component.  *)
 let blue c = Triple.trd c
 
-let make (r, g, b) = Triple.(map float_of_int (make r g b))
+let make (r, g, b) = Triple.map float_of_int (Triple.make r g b)
 
 let to_string c =
   let c = Triple.map int_of_float c in
-  Printf.sprintf "color(%d, %d, %d)" (red c) (green c) (blue c)
+  Printf.sprintf "(%d, %d, %d)" (red c) (green c) (blue c)
 
 (* Scalar product in three-dimensional space.  *)
 let scalar_prod c c' =
@@ -70,14 +70,22 @@ let standard_deviation avg cols =
   let sum = List.fold_left add black sum_squared_diff_list in
   Triple.map sqrt (shift (1. /. float_of_int (List.length cols)) sum)
 
-
 let make_cloud cols =
   let avg = average cols in
   {id = next_id (); center = avg; sigma = standard_deviation avg cols}
 
 let string_of_cloud c =
-  Printf.sprintf "color_cloud(id = %d, center = %s, sigma = %s)"
+  Printf.sprintf "%d %s %s"
     c.id (to_string c.center) (to_string c.sigma)
+
+let cloud_of_string s =
+  let receiver_f id center_r center_g center_b sigma_r sigma_g sigma_b = {
+    id = id;
+    center = make (center_r, center_g, center_b);
+    sigma = make (sigma_r, sigma_g, sigma_b)
+  }
+  in
+  Scanf.sscanf s "%d (%d, %d, %d) (%d, %d, %d)" receiver_f
 
 let id c = c.id
 
@@ -99,6 +107,8 @@ let leq col col' = cmp (<=) col col'
 (* Test if [col >= col'].  *)
 let geq col col' = cmp (>=) col col'
 
+(* [member col col_cloud] returns true if and only if [col]
+    belongs to [col_cloud].  *)
 let member col col_cloud =
   (* We suppose that colors composing a color cloud follows a Gaussian
      distribution.  Thus, a random color of the cloud is between
@@ -106,3 +116,26 @@ let member col col_cloud =
   let delta = shift 3. col_cloud.sigma in
   geq col (diff col_cloud.center delta) &&
   leq col (add col_cloud.center delta)
+
+(* Return the cloud [c] among [col_clouds] such that the distance
+   between [c.center] and [col] is minimal.  *)
+let nearest_cloud col col_clouds =
+  let aux col (old_cloud, old_dist) new_cloud =
+    let new_dist = dist col (center new_cloud) in
+    if new_dist < old_dist then (new_cloud, new_dist) else (old_cloud, old_dist)
+  in
+  match col_clouds with
+  | [] -> assert false
+  | col_cloud :: col_clouds ->
+    let dist = dist col (center col_cloud) in
+    fst (List.fold_left (aux col) (col_cloud, dist) col_clouds)
+
+let recognize col known_cols =
+  match List.filter (member col) known_cols with
+  (* There is no color recognized without doubt.  In this case we return
+     the "nearest" color among known colors.  *)
+  | [] -> Probable.Maybe (nearest_cloud col known_cols)
+
+  (* We decide between the candidates by computing the "nearest"
+     cloud.  *)
+  | col_clouds -> Probable.Sure (nearest_cloud col col_clouds)

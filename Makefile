@@ -12,7 +12,7 @@ BEXT = byte
 DEBUGFLAG = -g
 OCAMLCFLAGS = -cflags $(DEBUGFLAG),-annot,-bin-annot,-w,+a
 OCAMLLFLAGS = -lflag $(DEBUGFLAG)
-# OCAMLLIBS = -lib unix
+OCAMLLIBS = -lib unix
 
 # Docker variables.
 DOCKER = docker
@@ -27,8 +27,9 @@ ROBOT_USR = robot
 ROBOT_IP = ev3dev.local
 
 # Target basenames.
-TARGETS = $(addprefix $(srcdir)/, color_recognition)	\
-		$(addprefix $(testdir)/, motor_test legoEv3Button_test)
+TARGETS = $(addprefix $(srcdir)/, learn_colors)			\
+	  $(addprefix $(testdir)/,				\
+		color_test motor_test legoEv3Button_test)
 
 # Native targets.
 NTARGETS = $(addsuffix .$(NEXT),$(TARGETS))

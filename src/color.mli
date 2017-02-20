@@ -9,8 +9,6 @@ val make : int * int * int -> t
 val to_string : t -> string
 (** @return a string representation of a color.  *)
 
-val dist : t -> t -> float
-
 
 (** {4 Color cloud} *)
 
@@ -23,12 +21,11 @@ val make_cloud : t list -> color_cloud
 val string_of_cloud : color_cloud -> string
 (** @return a string representation of a color cloud.  *)
 
+val cloud_of_string : string -> color_cloud
+
 val id : color_cloud -> int
 (** @return the identifier of the given cloud.  *)
 
-val center : color_cloud -> t
-(** @return the center point of the given cloud.  *)
-
-val member : t -> color_cloud -> bool
-(** [member color color_cloud] returns true if and only if [color]
-    belongs to [color_cloud].  *)
+val recognize : t -> color_cloud list -> color_cloud Probable.t
+(** [recognize col known_cols] returns the color cloud containing [col]
+    among the cloud list [known_cols].  *)
