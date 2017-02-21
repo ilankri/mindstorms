@@ -27,7 +27,7 @@ ROBOT_USR = robot
 ROBOT_IP = ev3dev.local
 
 # Target basenames.
-TARGETS = $(addprefix $(srcdir)/, learn_colors)			\
+TARGETS = $(addprefix $(srcdir)/, learn_colors follow_line)	\
 	  $(addprefix $(testdir)/,				\
 		color_test motor_test legoEv3Button_test)
 
@@ -44,7 +44,7 @@ export-to-robot = $(SCP) $(addprefix $(builddir)/,$(1))		\
 			$(ROBOT_USR)@$(ROBOT_IP):$(ROBOT_HOME)
 
 .SUFFIXES:
-.PHONY: all $(NTARGETS) $(BTARGETS) export-native	\
+.PHONY: all all-byte $(NTARGETS) $(BTARGETS) export-native	\
 	export-byte doc ev3 clean
 
 # Generate suitable executable for the robot using Docker.
@@ -67,7 +67,9 @@ doc:
 ev3:
 	$(DOCKER) build -t $(EV3_IMG) .
 
-# Generic rule.
+# Generic rules.
+all-byte: $(BTARGETS)
+
 $(NTARGETS) $(BTARGETS):
 	$(build) $@
 

@@ -54,8 +54,11 @@ let pressed_button () =
   ignore (extract_keycode ());
   button_of_keycode (extract_keycode ())
 
-let repeat_until f button =
+let apply_until f button =
   let rec aux acc =
     if pressed_button () = button then acc else aux (f () :: acc)
   in
   aux []
+
+let rec repeat_until f button =
+  if pressed_button () = button then () else repeat_until f button

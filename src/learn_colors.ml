@@ -2,7 +2,7 @@ let main =
   let learn_color () =
     let col_cloud =
       Color.make_cloud
-        (LegoEv3Button.repeat_until Color_sensor.read_color LegoEv3Button.Right)
+        (LegoEv3Button.apply_until Color_sensor.read_color LegoEv3Button.Right)
     in
     Printf.printf "Color %d learned.\n%!" (Color.id col_cloud);
     col_cloud
@@ -17,7 +17,7 @@ let main =
   Color_sensor.connect();
   print_endline "Ready to learn colors.";
   store_learned_colors
-    (LegoEv3Button.repeat_until learn_color LegoEv3Button.Backspace)
+    (LegoEv3Button.apply_until learn_color LegoEv3Button.Backspace)
     "known_colors";
   Color_sensor.disconnect ();
   print_endline "Color learning done.";

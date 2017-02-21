@@ -19,13 +19,12 @@ let main =
   let known_colors = load_known_colors "known_colors" in
 
   Color_sensor.connect ();
+
   (* Then, the robot is able to recognize input color.  *)
   print_endline "Ready to recognize colors.";
-  ignore (
-    LegoEv3Button.repeat_until
-      (recognize_color known_colors)
-      LegoEv3Button.Backspace
-  );
+  LegoEv3Button.repeat_until
+    (recognize_color known_colors)
+    LegoEv3Button.Backspace;
 
   Color_sensor.disconnect ();
   exit 0

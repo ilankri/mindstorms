@@ -18,6 +18,10 @@ val to_string : t -> string
 (** @return the string representation of the button (e.g. for debugging
     purpose).  *)
 
-val repeat_until : (unit -> 'a) -> t -> 'a list
-(** [repeat_until f button] applies [f] until [button] is pressed and
+val apply_until : (unit -> 'a) -> t -> 'a list
+(** [apply_until f button] applies [f] until [button] is pressed and
     released.  @return the successive results of [f] application. *)
+
+val repeat_until : (unit -> unit) -> t -> unit
+(** [repeat_until f button] applies [f] until [button] is pressed and
+    released.  *)
