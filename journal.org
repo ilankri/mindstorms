@@ -1,5 +1,11 @@
 * <2017-02-01>
 ** Fait:
+   - Etalonnage Gaussienne
+** A faire:
+   - Algorithme pour suivre une ligne (au moins droite)
+
+* <2017-02-01>
+** Fait:
    - Etalonnage min-max
 ** A faire:
    - Etalonnage Gaussienne
