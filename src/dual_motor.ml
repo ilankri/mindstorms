@@ -42,9 +42,6 @@ let stop () =
 let rotate dir =
   match dir with
     Left ->
-    begin
-      RM.send_command RM.Stop;
-      LM.send_command LM.Stop;
-      LM.send_command LM.RunDirect
-    end
-   |_ -> ()
+    RM.send_command RM.Stop
+  | Right ->
+     LM.send_command LM.Stop
