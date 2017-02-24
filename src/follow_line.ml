@@ -21,7 +21,7 @@ let main =
   Color_sensor.connect ();
   Dual_motor.connect ();
 
-  Dual_motor.set_speed 25;
+  Dual_motor.set_speed 40;
   Dual_motor.move_forward ();
   check_end_of_line known_colors;
 

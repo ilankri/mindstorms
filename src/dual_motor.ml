@@ -1,3 +1,5 @@
+type rotation = Left | Right
+
 module LM =
   Motor.TachoMotor
     (struct
@@ -34,4 +36,15 @@ let move_forward () =
 
 let stop () =
   LM.send_command LM.Stop;
-  RM.send_command RM.Stop;
+  RM.send_command RM.Stop
+
+  
+let rotate dir =
+  match dir with
+    Left ->
+    begin
+      RM.send_command RM.Stop;
+      LM.send_command LM.Stop;
+      LM.send_command LM.RunDirect
+    end
+   |_ -> ()
