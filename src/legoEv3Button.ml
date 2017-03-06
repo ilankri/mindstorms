@@ -60,5 +60,8 @@ let apply_until f button =
   in
   aux []
 
-let rec repeat_until f button =
-  if pressed_button () = button then () else repeat_until f button
+let rec iter_until f button =
+  if pressed_button () = button then () else begin
+    f ();
+    iter_until f button
+  end

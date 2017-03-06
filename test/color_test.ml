@@ -22,7 +22,7 @@ let main =
 
   (* Then, the robot is able to recognize input color.  *)
   print_endline "Ready to recognize colors.";
-  LegoEv3Button.repeat_until
+  LegoEv3Button.iter_until
     (recognize_color known_colors)
     LegoEv3Button.Backspace;
 
