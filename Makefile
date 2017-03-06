@@ -29,7 +29,7 @@ ROBOT_IP = ev3dev.local
 # Target basenames.
 TARGETS = $(addprefix $(srcdir)/, learn_colors follow_line)	\
 	  $(addprefix $(testdir)/,				\
-		color_test motor_test legoEv3Button_test)
+		color_test motor_test legoEv3Button_test hello_ev3)
 
 # Native targets.
 NTARGETS = $(addsuffix .$(NEXT),$(TARGETS))
