@@ -1,4 +1,4 @@
-type rotation
+type rotation = Left | Right
 
 val connect : unit -> unit
 

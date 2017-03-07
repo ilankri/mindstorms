@@ -16,32 +16,61 @@ module RM =
     end)
     (struct let output_port = Port.OutputA end)
 
-let connect () =
-  LM.connect ();
-  RM.connect ();
-  LM.send_command LM.Reset;
-  RM.send_command RM.Reset
+type motor_flag = LM | RM | Dual
 
-let disconnect () =
-  LM.disconnect ();
-  RM.disconnect ()
+let apply_to_both cmd =
+  cmd LM;
+  cmd RM
 
-let set_speed speed =
-  LM.set_duty_cycle_sp speed;
-  RM.set_duty_cycle_sp speed
+let rec connect' = function
+  | LM ->
+    LM.connect ();
+    LM.send_command LM.Reset
+  | RM ->
+    RM.connect ();
+    RM.send_command RM.Reset
+  | Dual -> apply_to_both connect'
 
-let move_forward () =
-  LM.send_command LM.RunDirect;
-  RM.send_command RM.RunDirect
+let connect () = connect' Dual
 
-let stop () =
-  LM.send_command LM.Stop;
-  RM.send_command RM.Stop
+let rec disconnect' = function
+  | LM -> LM.disconnect ()
+  | RM -> RM.disconnect ()
+  | Dual -> apply_to_both disconnect'
 
-  
+let disconnect () = disconnect' Dual
+
+let rec run = function
+  | LM -> LM.send_command LM.RunForever
+  | RM -> RM.send_command RM.RunForever
+  | Dual -> apply_to_both run
+
+let rec set_speed' speed = function
+  | LM -> LM.set_speed_sp speed;
+  | RM -> RM.set_speed_sp speed;
+  | Dual -> apply_to_both (set_speed' speed)
+
+let set_speed speed = set_speed' speed Dual
+
+let move_forward () = run Dual
+
+let get_speed = function
+  | LM -> LM.speed_sp ()
+  | RM -> RM.speed_sp ()
+  | Dual -> assert false
+
+let rec stop' = function
+  | LM -> LM.send_command LM.Stop
+  | RM -> RM.send_command RM.Stop
+  | Dual -> apply_to_both stop'
+
+let stop () = stop' Dual
+
 let rotate dir =
-  match dir with
-    Left ->
-    RM.send_command RM.Stop
-  | Right ->
-     LM.send_command LM.Stop
+  let motor_flag =
+    match dir with
+    | Left -> LM
+    | Right -> RM
+  in
+  set_speed' (get_speed motor_flag asr 1) motor_flag;
+  run motor_flag
