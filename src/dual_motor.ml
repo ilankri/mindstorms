@@ -74,3 +74,13 @@ let rotate dir =
   in
   set_speed' (get_speed motor_flag asr 1) motor_flag;
   run motor_flag
+
+let random_rotation() =
+  let rdm = Random.int 2
+  in
+  if rdm=1 then Left else Right;;
+
+let opposite r =
+  match r with
+  | Left -> Right
+  | _ -> Left;;
