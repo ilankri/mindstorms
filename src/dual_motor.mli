@@ -4,7 +4,7 @@ val disconnect : unit -> unit
 
 val set_speed : int -> unit
 
-val move_forward : unit -> unit
+val start : unit -> unit
 
 val stop : unit -> unit
 

@@ -38,19 +38,19 @@ let rec disconnect' = function
 
 let disconnect () = disconnect' Both
 
-let rec run = function
-  | Left -> LM.send_command LM.RunForever
-  | Right -> RM.send_command RM.RunForever
-  | Both -> apply_to_both run
+let rec start' = function
+  | Left -> LM.send_command LM.RunDirect
+  | Right -> RM.send_command RM.RunDirect
+  | Both -> apply_to_both start'
 
 let rec set_speed' speed = function
-  | Left -> LM.set_speed_sp speed;
-  | Right -> RM.set_speed_sp speed;
+  | Left -> LM.set_duty_cycle_sp speed;
+  | Right -> RM.set_duty_cycle_sp speed;
   | Both -> apply_to_both (set_speed' speed)
 
 let set_speed speed = set_speed' speed Both
 
-let move_forward () = run Both
+let start () = start' Both
 
 let get_speed = function
   | Left -> LM.speed_sp ()
@@ -70,6 +70,5 @@ let turn dir =
     | Direction.Left -> (Right, Left)
     | Direction.Right -> (Left, Right)
   in
-  set_speed' (get_speed motor_to_speed_up + 45) motor_to_speed_up;
-  set_speed' (get_speed motor_to_slow_down / 3) motor_to_slow_down;
-  run Both
+  set_speed' (get_speed motor_to_speed_up + 5) motor_to_speed_up;
+  set_speed' (get_speed motor_to_slow_down / 5) motor_to_slow_down;

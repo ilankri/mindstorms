@@ -1,63 +1,72 @@
+(* Exception raised when the robot detects the end of line mark.  *)
+exception Stop
+
+(* Read colors from the given and return the colors as a list.  *)
+let load_known_colors filename =
+  let rec aux ch acc =
+    try aux ch (input_line ch :: acc) with
+    | End_of_file -> acc
+  in
+  let ch = open_in filename in
+  let known_colors = List.map Color.cloud_of_string (aux ch []) in
+  close_in ch;
+  known_colors
+
+(* Check if the robot is on a line.  To do that, we just check if the
+   color is different from the background color.  *)
+let on_line known_colors =
+  (* We suppose that the background color has id 1.  *)
+  let is_bg_color c = Color.id c = 1 in
+
+  (* We suppose that the stop color has id 2.  *)
+  let is_stop_color c = Color.id c = 2 in
+
+  let color =
+    match Color.recognize (Color_sensor.read_color ()) known_colors with
+    | Probable.Maybe c | Probable.Sure c -> c
+  in
+  if is_stop_color color then raise Stop else not (is_bg_color color)
+
+(* Entry point.  *)
 let main =
-  try begin
-    let load_known_colors filename =
-      let rec aux ch acc =
-        try aux ch (input_line ch :: acc) with
-        | End_of_file -> acc
-      in
-      let ch = open_in filename in
-      let known_colors = List.map Color.cloud_of_string (aux ch []) in
-      close_in ch;
-      known_colors in
-    let is_bg_color c = Color.id c = 1 in
-    let is_stop_color c = Color.id c = 2 in
-    let trace_file = open_out "trace" in
-    let on_line known_colors =
-      let color =
-        match Color.recognize (Color_sensor.read_color ()) known_colors with
-        | Probable.Maybe c | Probable.Sure c -> c
-      in
-      output_string trace_file (string_of_int (Color.id color));
-      output_char trace_file '\n';
-      if is_stop_color color then begin
-        flush trace_file;
-        close_out trace_file;
-        raise Exit
-      end else not (is_bg_color color)
-    in
+  try
+    (* First we load the known colors.  *)
     let known_colors = load_known_colors "known_colors" in
-    let follow_line () =
-      let rec loop last_turn was_on_line =
-        let last_turn, was_on_line =
-          try
-            if on_line known_colors then
-              (last_turn, true)
-            else
-            if was_on_line then
-              let dir = Direction.opposite last_turn in
-              Dual_motor.turn dir;
-              (dir, false)
-            else (last_turn, false)
-          with
-          | Exit -> exit 0
-        in
-        loop last_turn was_on_line
+
+    let rec follow_line last_turn was_on_line =
+      let last_turn, was_on_line =
+        (* If the robot is on the line, don't change motor state.  *)
+        if try on_line known_colors with Stop -> exit 0 then
+          (last_turn, true)
+
+        (* Otherwise, we have to remember if the robot was previously on
+           the line.  *)
+        else
+          (* If it was on the line we have to correct the path of the
+             robot by turning in the opposite direction.  *)
+        if was_on_line then
+          let dir = Direction.opposite last_turn in
+          Dual_motor.turn dir;
+          (dir, false)
+
+        (* Otherwise, the robot has not yet got back on the line, so we
+           stay in the same state.  *)
+        else (last_turn, false)
       in
-      ignore (loop Direction.Left true)
+      follow_line last_turn was_on_line
     in
-    let init_dir = Direction.Left in
+    let init_dir = Direction.random () in
     Color_sensor.connect ();
     Dual_motor.connect ();
-    Dual_motor.move_forward ();
+    Dual_motor.start ();
     Dual_motor.turn init_dir;
-    follow_line ();
+    ignore (follow_line init_dir true);
     Color_sensor.disconnect ();
     Dual_motor.disconnect ();
     exit 0
-  end
   with
   | exn ->
     let ch = open_out "log" in
     output_string ch (Printexc.to_string exn);
-    Printexc.print_backtrace ch;
     close_out ch;
+    exit 1
