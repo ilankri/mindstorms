@@ -2,7 +2,7 @@ module CS =
   LegoEv3ColorSensor.LegoEv3ColorSensor
     (struct
       let name = "color_sensor"
-      let multiple_connection = true
+      let multiple_connection = false
     end)
     (struct let input_port = Port.Input1 end)
 

@@ -1,10 +1,8 @@
-type rotation = Left | Right
-
 module LM =
   Motor.TachoMotor
     (struct
       let name = "left_motor"
-      let multiple_connection = true
+      let multiple_connection = false
     end)
     (struct let output_port = Port.OutputD end)
 
@@ -12,75 +10,66 @@ module RM =
   Motor.TachoMotor
     (struct
       let name = "right_motor"
-      let multiple_connection = true
+      let multiple_connection = false
     end)
     (struct let output_port = Port.OutputA end)
 
-type motor_flag = LM | RM | Dual
+type motor_flag = Left | Right | Both
 
 let apply_to_both cmd =
-  cmd LM;
-  cmd RM
+  cmd Left;
+  cmd Right
 
 let rec connect' = function
-  | LM ->
+  | Left ->
     LM.connect ();
     LM.send_command LM.Reset
-  | RM ->
+  | Right ->
     RM.connect ();
     RM.send_command RM.Reset
-  | Dual -> apply_to_both connect'
+  | Both -> apply_to_both connect'
 
-let connect () = connect' Dual
+let connect () = connect' Both
 
 let rec disconnect' = function
-  | LM -> LM.disconnect ()
-  | RM -> RM.disconnect ()
-  | Dual -> apply_to_both disconnect'
+  | Left -> LM.disconnect ()
+  | Right -> RM.disconnect ()
+  | Both -> apply_to_both disconnect'
 
-let disconnect () = disconnect' Dual
+let disconnect () = disconnect' Both
 
 let rec run = function
-  | LM -> LM.send_command LM.RunForever
-  | RM -> RM.send_command RM.RunForever
-  | Dual -> apply_to_both run
+  | Left -> LM.send_command LM.RunForever
+  | Right -> RM.send_command RM.RunForever
+  | Both -> apply_to_both run
 
 let rec set_speed' speed = function
-  | LM -> LM.set_speed_sp speed;
-  | RM -> RM.set_speed_sp speed;
-  | Dual -> apply_to_both (set_speed' speed)
+  | Left -> LM.set_speed_sp speed;
+  | Right -> RM.set_speed_sp speed;
+  | Both -> apply_to_both (set_speed' speed)
 
-let set_speed speed = set_speed' speed Dual
+let set_speed speed = set_speed' speed Both
 
-let move_forward () = run Dual
+let move_forward () = run Both
 
 let get_speed = function
-  | LM -> LM.speed_sp ()
-  | RM -> RM.speed_sp ()
-  | Dual -> assert false
+  | Left -> LM.speed_sp ()
+  | Right -> RM.speed_sp ()
+  | Both -> assert false
 
 let rec stop' = function
-  | LM -> LM.send_command LM.Stop
-  | RM -> RM.send_command RM.Stop
-  | Dual -> apply_to_both stop'
+  | Left -> LM.send_command LM.Stop
+  | Right -> RM.send_command RM.Stop
+  | Both -> apply_to_both stop'
 
-let stop () = stop' Dual
+let stop () = stop' Both
 
-let rotate dir =
-  let motor_flag =
+let turn dir =
+  let motor_to_speed_up, motor_to_slow_down =
     match dir with
-    | Left -> LM
-    | Right -> RM
+    | Direction.Left -> (Right, Left)
+    | Direction.Right -> (Left, Right)
   in
-  set_speed' (get_speed motor_flag asr 1) motor_flag;
-  run motor_flag
-
-let random_rotation() =
-  let rdm = Random.int 2
-  in
-  if rdm=1 then Left else Right;;
-
-let opposite r =
-  match r with
-  | Left -> Right
-  | _ -> Left;;
+  set_speed' (get_speed motor_to_speed_up + 45) motor_to_speed_up;
+  set_speed' (get_speed motor_to_slow_down / 3) motor_to_slow_down;
+  run Both
