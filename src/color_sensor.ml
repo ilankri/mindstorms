@@ -12,4 +12,6 @@ let read_color () =
 
 let connect () = CS.connect ()
 
-let disconnect () = CS.disconnect ()
+let disconnect () =
+  CS.set_mode CS.COL_REFLECT;
+  CS.disconnect ()
