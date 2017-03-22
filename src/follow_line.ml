@@ -16,16 +16,23 @@ let load_known_colors filename =
    color is different from the background color.  *)
 let on_line known_colors =
   (* We suppose that the background color has id 1.  *)
-  let is_bg_color c = Color.id c = 1 in
+  let is_bg_color = function
+    | Probable.Maybe c | Probable.Sure c -> Color.id c = 1
+  in
 
   (* We suppose that the stop color has id 2.  *)
-  let is_stop_color c = Color.id c = 2 in
-
-  let color =
-    match Color.recognize (Color_sensor.read_color ()) known_colors with
-    | Probable.Maybe c | Probable.Sure c -> c
+  let is_stop_color = function
+    | Probable.Sure c -> Color.id c = 2
+    | Probable.Maybe _ -> false
   in
+
+  let color = Color.recognize (Color_sensor.read_color ()) known_colors in
   if is_stop_color color then raise Stop else not (is_bg_color color)
+
+let exit' status =
+  Color_sensor.disconnect ();
+  Dual_motor.disconnect ();
+  exit status
 
 (* Entry point.  *)
 let main =
@@ -35,8 +42,15 @@ let main =
 
     let rec follow_line last_turn was_on_line =
       let last_turn, was_on_line =
+        let is_on_line =
+          try on_line known_colors with
+          | Stop ->
+            Dual_motor.stop ();
+            exit' 0
+        in
+
         (* If the robot is on the line, don't change motor state.  *)
-        if try on_line known_colors with Stop -> exit 0 then
+        if is_on_line then
           (last_turn, true)
 
         (* Otherwise, we have to remember if the robot was previously on
@@ -61,12 +75,10 @@ let main =
     Dual_motor.start ();
     Dual_motor.turn init_dir;
     ignore (follow_line init_dir true);
-    Color_sensor.disconnect ();
-    Dual_motor.disconnect ();
-    exit 0
+    exit' 0
   with
   | exn ->
     let ch = open_out "log" in
     output_string ch (Printexc.to_string exn);
     close_out ch;
-    exit 1
+    exit' 1
