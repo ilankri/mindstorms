@@ -53,8 +53,8 @@ let set_speed speed = set_speed' speed Both
 let start () = start' Both
 
 let get_speed = function
-  | Left -> LM.speed_sp ()
-  | Right -> RM.speed_sp ()
+  | Left -> LM.duty_cycle_sp ()
+  | Right -> RM.duty_cycle_sp ()
   | Both -> assert false
 
 let rec stop' = function
@@ -70,5 +70,5 @@ let turn dir =
     | Direction.Left -> (Right, Left)
     | Direction.Right -> (Left, Right)
   in
-  set_speed' (get_speed motor_to_speed_up + 5) motor_to_speed_up;
-  set_speed' (get_speed motor_to_slow_down / 5) motor_to_slow_down;
+  set_speed' (get_speed motor_to_speed_up + 20) motor_to_speed_up;
+  set_speed' (get_speed motor_to_slow_down / 2) motor_to_slow_down
