@@ -39,13 +39,15 @@ let main =
   try
     (* First we load the known colors.  *)
     let known_colors = load_known_colors "known_colors" in
+    let chosen_direction = Direction.random()
+    in
 
     let rec follow_line last_turn was_on_line =
       let last_turn, was_on_line =
         let is_on_line =
           try on_line known_colors with
           | Stop ->
-            Dual_motor.stop ();
+            Dual_motor.turn (Direction.opposite chosen_direction);
             exit' 0
         in
 
