@@ -36,49 +36,43 @@ let exit' status =
 
 (* Entry point.  *)
 let main =
+  let on_line known_colors =
+    try on_line known_colors with
+    | Stop ->
+      Dual_motor.stop ();
+      exit' 0
+  in
+  let rec find_edge known_colors =
+    if on_line known_colors then find_edge known_colors else ()
+  in
+  let rec follow_line known_colors init_dir : unit =
+    if on_line known_colors then Dual_motor.turn init_dir else
+      Dual_motor.turn (Direction.opposite init_dir);
+    follow_line known_colors init_dir
+  in
+
+  (* Turn on recording of exceptions backtraces for debugging
+     purpose.  *)
+  Printexc.record_backtrace true;
+
   try
     (* First we load the known colors.  *)
     let known_colors = load_known_colors "known_colors" in
 
-    let rec follow_line last_turn was_on_line =
-      let last_turn, was_on_line =
-        let is_on_line =
-          try on_line known_colors with
-          | Stop ->
-            Dual_motor.stop ();
-            exit' 0
-        in
-
-        (* If the robot is on the line, don't change motor state.  *)
-        if is_on_line then
-          (last_turn, true)
-
-        (* Otherwise, we have to remember if the robot was previously on
-           the line.  *)
-        else
-          (* If it was on the line we have to correct the path of the
-             robot by turning in the opposite direction.  *)
-        if was_on_line then
-          let dir = Direction.opposite last_turn in
-          Dual_motor.turn dir;
-          (dir, false)
-
-        (* Otherwise, the robot has not yet got back on the line, so we
-           stay in the same state.  *)
-        else (last_turn, false)
-      in
-      follow_line last_turn was_on_line
-    in
+    (* Choose randomly an initial direction.  *)
     let init_dir = Direction.random () in
+
     Color_sensor.connect ();
     Dual_motor.connect ();
     Dual_motor.start ();
     Dual_motor.turn init_dir;
-    ignore (follow_line init_dir true);
+    find_edge known_colors;
+    follow_line known_colors init_dir;
     exit' 0
   with
   | exn ->
     let ch = open_out "log" in
-    output_string ch (Printexc.to_string exn);
+    output_string ch (Printexc.to_string exn ^ "\n");
+    Printexc.print_backtrace ch;
     close_out ch;
     exit' 1

@@ -70,5 +70,7 @@ let turn dir =
     | Direction.Left -> (Right, Left)
     | Direction.Right -> (Left, Right)
   in
-  set_speed' (get_speed motor_to_speed_up + 20) motor_to_speed_up;
-  set_speed' (get_speed motor_to_slow_down / 2) motor_to_slow_down
+  let speed = 30 in
+  let factor = 5 in
+  set_speed' speed motor_to_speed_up;
+  set_speed' (speed / factor) motor_to_slow_down
