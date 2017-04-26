@@ -1,3 +1,9 @@
+* <2017-04-26>
+** Fait:
+   - Algo qui semble marcher bien mais avec des delays bizarres
+** À fait:
+   - Trouver la cause des delays
+
 * <2017-03-22>
 ** Fait:
    - Suivi de ligne, mais problème dans les virages
