@@ -65,6 +65,7 @@ let main =
     let on_line = on_line known_colors in
     if on_line && not was_on_line then turn init_dir else
     if not on_line && was_on_line then turn (Direction.opposite init_dir);
+    Unix.sleep 1;
     follow_line known_colors init_dir on_line
   in
 
