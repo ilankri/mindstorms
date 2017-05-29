@@ -65,9 +65,14 @@ let main =
     let on_line = on_line known_colors in
     if on_line && not was_on_line then turn init_dir else
     if not on_line && was_on_line then turn (Direction.opposite init_dir);
-    Unix.sleep 1;
     follow_line known_colors init_dir on_line
   in
+
+  (* First we load the known colors.  *)
+  let known_colors = load_known_colors "known_colors" in
+
+  (* Choose randomly an initial direction.  *)
+  let init_dir = Direction.random () in
 
   (* Turn on recording of exceptions backtraces for debugging
      purpose.  *)
@@ -77,12 +82,6 @@ let main =
   ignore (Gc.create_alarm (gc_alarm ch));
 
   try
-    (* First we load the known colors.  *)
-    let known_colors = load_known_colors "known_colors" in
-
-    (* Choose randomly an initial direction.  *)
-    let init_dir = Direction.random () in
-
     Color_sensor.connect ();
     Dual_motor.connect ();
     Dual_motor.start ();
