@@ -1,0 +1,7 @@
+(env (_ (flags (:standard -w +a-32-34-42-60))))
+
+(executables
+ (libraries unix)
+ (modules_without_implementation probable)
+ (names learn_colors follow_line color_test motor_test legoEv3Button_test
+        hello_ev3))

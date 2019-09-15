@@ -2,17 +2,11 @@ SHELL = /bin/sh
 SCP = scp
 
 srcdir = src
-testdir = test
-builddir = _build
+builddir = _build/default/src
 
-# OCamlbuild variables.
-OCAMLBUILD = ocamlbuild
-NEXT = native
-BEXT = byte
-DEBUGFLAG = -g
-OCAMLCFLAGS = -cflags $(DEBUGFLAG),-annot,-bin-annot,-w,+a
-OCAMLLFLAGS = -lflag $(DEBUGFLAG)
-OCAMLLIBS = -lib unix
+DUNE = dune
+NEXT = exe
+BEXT = bc
 
 # Docker variables.
 DOCKER = docker
@@ -27,8 +21,7 @@ ROBOT_USR = robot
 ROBOT_IP = ev3dev.local
 
 # Target basenames.
-TARGETS = $(addprefix $(srcdir)/, learn_colors follow_line)	\
-	  $(addprefix $(testdir)/,				\
+TARGETS = $(addprefix $(srcdir)/, learn_colors follow_line		\
 		color_test motor_test legoEv3Button_test hello_ev3)
 
 # Native targets.
@@ -38,18 +31,17 @@ NTARGETS = $(addsuffix .$(NEXT),$(TARGETS))
 BTARGETS = $(addsuffix .$(BEXT),$(TARGETS))
 
 # Auxiliary functions.
-build = $(OCAMLBUILD) -no-links $(OCAMLCFLAGS) $(OCAMLLFLAGS) $(OCAMLLIBS)
-clean = $(OCAMLBUILD) -clean
 export-to-robot = $(SCP) $(addprefix $(builddir)/,$(1))		\
 			$(ROBOT_USR)@$(ROBOT_IP):$(ROBOT_HOME)
 
 .SUFFIXES:
 .PHONY: all all-byte $(NTARGETS) $(BTARGETS) export-native	\
-	export-byte doc ev3 clean
+	export-byte ev3 clean
 
 # Generate suitable executable for the robot using Docker.
 all: ev3
-	$(DOCKER) run --rm -v $$PWD:$(ROBOT_HOME) $(EV3_IMG) $(MAKE) $(NTARGETS)
+	$(DOCKER) run --rm -v $$PWD:$(ROBOT_HOME) $(EV3_IMG)		\
+		sh -c $$(eval opam config env) && $(MAKE) $(NTARGETS)
 
 # Export native executables to the robot via SSH.
 export-native: all
@@ -59,10 +51,6 @@ export-native: all
 export-byte: $(BTARGETS)
 	$(call export-to-robot,$^)
 
-# Generate documentation.
-doc:
-	$(OCAMLBUILD) ev3.docdir/index.html
-
 # Generate Docker image to compile OCaml code for the robot.
 ev3:
 	$(DOCKER) build -t $(EV3_IMG) .
@@ -71,8 +59,8 @@ ev3:
 all-byte: $(BTARGETS)
 
 $(NTARGETS) $(BTARGETS):
-	$(build) $@
+	$(DUNE) build $@
 
 # Cleaning rule.
 clean:
-	$(clean)
+	$(DUNE) clean
